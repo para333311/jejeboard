@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>NEON JEJE BOARD 2026</title>
+    <style>
+        body { background: #050505; color: #fff; font-family: 'Noto Sans KR', sans-serif; padding: 20px; }
+        h1 { color: #00f3ff; text-shadow: 0 0 10px #00f3ff; text-align: center; }
+        .dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
+        .card { background: #0d0d1a; border: 1px solid #00f3ff; border-radius: 10px; padding: 15px; }
+        .card h3 { color: #ff00ff; border-bottom: 1px solid #ff00ff; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .post { margin: 10px 0; font-size: 0.9rem; }
+        a { color: #ccc; text-decoration: none; }
+        a:hover { color: #39ff14; }
+        .admin { margin-top: 50px; text-align: center; border-top: 1px solid #333; padding: 20px; }
+        input, button { padding: 8px; background: #000; color: #fff; border: 1px solid #00f3ff; }
+        button { cursor: pointer; background: #00f3ff; color: #000; font-weight: bold; }
+        .del-btn { font-size: 0.6rem; color: red; border: 1px solid red; background: none; }
+    </style>
+</head>
+<body>
+    <h1>🏛️ NEON JEJE BOARD 2026</h1>
+    <p id="status" style="text-align:center; color:#39ff14;">Scanning Networks...</p>
+    <div class="dashboard" id="db"></div>
+    <div class="admin">
+        <input type="text" id="name" placeholder="게시판 이름">
+        <input type="text" id="url" placeholder="URL">
+        <button onclick="add()">게시판 추가</button>
+    </div>
+    <script>
+        async function load() {
+            const r = await fetch('/api/scrape_all');
+            const d = await r.json();
+            document.getElementById('status').innerText = 'LAST UPDATE: ' + d.updated_at;
+            const container = document.getElementById('db');
+            container.innerHTML = d.data.map(b => `
+                <div class="card">
+                    <h3>${b.name} <button class="del-btn" onclick="del('${b.url}')">DEL</button></h3>
+                    ${b.posts.map(p => `<div class="post"><a href="${p.link}" target="_blank">${p.title}</a></div>`).join('')}
+                </div>
+            `).join('');
+        }
+        async function add() {
+            const name = document.getElementById('name').value;
+            const url = document.getElementById('url').value;
+            const password = prompt("비밀번호 입력:");
+            await fetch('/api/boards', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({name, url, password})
+            });
+            location.reload();
+        }
+        async function del(url) {
+            const password = prompt("비밀번호 입력:");
+            await fetch('/api/boards', {
+                method: 'DELETE',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url, password})
+            });
+            location.reload();
+        }
+        load();
+    </script>
+</body>
+</html>
