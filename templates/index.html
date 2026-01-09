@@ -2,48 +2,204 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NEON JEJE BOARD 2026</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+KR:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: #fff; font-family: 'Noto Sans KR', sans-serif; padding: 20px; }
-        h1 { color: #00f3ff; text-shadow: 0 0 10px #00f3ff; text-align: center; }
-        .dashboard { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 20px; }
-        .card { background: #0d0d1a; border: 1px solid #00f3ff; border-radius: 10px; padding: 15px; }
-        .card h3 { color: #ff00ff; border-bottom: 1px solid #ff00ff; padding-bottom: 5px; display: flex; justify-content: space-between; }
-        .post { margin: 10px 0; font-size: 0.9rem; }
-        a { color: #ccc; text-decoration: none; }
-        a:hover { color: #39ff14; }
-        .admin { margin-top: 50px; text-align: center; border-top: 1px solid #333; padding: 20px; }
-        input, button { padding: 8px; background: #000; color: #fff; border: 1px solid #00f3ff; }
-        button { cursor: pointer; background: #00f3ff; color: #000; font-weight: bold; }
-        .del-btn { font-size: 0.6rem; color: red; border: 1px solid red; background: none; }
+        :root {
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #39ff14;
+            --bg-dark: #050505;
+            --card-bg: rgba(13, 13, 26, 0.9);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: 'Noto Sans KR', sans-serif;
+            margin: 0; padding: 20px;
+            background-image: linear-gradient(rgba(0, 243, 255, 0.03) 1px, transparent 1px), 
+                              linear-gradient(90deg, rgba(0, 243, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .container { max-width: 1500px; margin: 0 auto; }
+
+        header {
+            text-align: center; padding: 40px 0;
+            border: 1px solid var(--neon-blue);
+            border-radius: 15px; margin-bottom: 30px;
+            background: rgba(0, 0, 0, 0.8);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem; color: var(--neon-blue);
+            text-shadow: 0 0 10px var(--neon-blue);
+            margin: 0;
+        }
+
+        .sync-info {
+            color: var(--neon-green); font-family: 'Orbitron', sans-serif;
+            font-size: 0.8rem; margin-top: 10px; letter-spacing: 2px;
+        }
+
+        h2.sec-title {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--neon-pink); border-left: 4px solid var(--neon-pink);
+            padding-left: 15px; margin: 40px 0 20px;
+            text-shadow: 0 0 5px var(--neon-pink);
+            font-size: 1.4rem;
+        }
+
+        /* 대시보드 그리드 */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--neon-blue);
+            border-radius: 10px; padding: 20px;
+            transition: 0.3s;
+        }
+
+        .card:hover { border-color: var(--neon-pink); box-shadow: 0 0 15px rgba(255, 0, 255, 0.2); }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid var(--neon-blue); padding-bottom: 10px; margin-bottom: 15px;
+        }
+
+        .card-header h3 { margin: 0; font-size: 1.1rem; color: var(--neon-blue); }
+
+        .post-list { list-style: none; padding: 0; margin: 0; }
+        .post-item {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 8px 0; border-bottom: 1px solid #1a1a3a; gap: 10px;
+        }
+
+        .post-item a {
+            color: #eee; text-decoration: none; font-size: 0.9rem;
+            line-height: 1.4; flex: 1;
+        }
+
+        .post-item a:hover { color: var(--neon-green); }
+
+        .post-date {
+            color: #666; font-size: 0.75rem; font-family: 'Orbitron', sans-serif;
+            white-space: nowrap; margin-top: 3px;
+        }
+
+        /* 관리 패널 */
+        .admin-box {
+            margin-top: 60px; padding: 30px;
+            border: 1px dashed var(--neon-green);
+            text-align: center; border-radius: 15px;
+        }
+
+        input {
+            background: #000; border: 1px solid var(--neon-blue);
+            color: #fff; padding: 10px; border-radius: 5px; margin: 5px; width: 250px;
+        }
+
+        .btn-add {
+            background: var(--neon-blue); color: #000; font-weight: bold;
+            border: none; padding: 10px 25px; border-radius: 5px; cursor: pointer;
+        }
+
+        .btn-del {
+            background: none; color: #ff3366; border: 1px solid #ff3366;
+            padding: 2px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem;
+        }
+
+        #loader {
+            position: fixed; top:0; left:0; width:100%; height:100%;
+            background: #000; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+        }
+
+        .scanline {
+            width: 200px; height: 2px; background: var(--neon-blue);
+            box-shadow: 0 0 10px var(--neon-blue);
+            animation: scan 2s infinite;
+        }
+
+        @keyframes scan { 0% { transform: translateY(-20px); opacity: 0; } 50% { opacity: 1; } 100% { transform: translateY(20px); opacity: 0; } }
     </style>
 </head>
 <body>
-    <h1>🏛️ NEON JEJE BOARD 2026</h1>
-    <p id="status" style="text-align:center; color:#39ff14;">Scanning Networks...</p>
-    <div class="dashboard" id="db"></div>
-    <div class="admin">
-        <input type="text" id="name" placeholder="게시판 이름">
-        <input type="text" id="url" placeholder="URL">
-        <button onclick="add()">게시판 추가</button>
+
+    <div id="loader">
+        <div class="scanline"></div>
+        <p style="color:var(--neon-blue); font-family:'Orbitron'; margin-top:20px;">ACCESSING DISTRICT NETWORKS...</p>
     </div>
+
+    <div class="container">
+        <header>
+            <h1>🏛️ NEON JEJE BOARD 2026</h1>
+            <div class="sync-info" id="sync-time">STATUS: SYNCHRONIZING...</div>
+        </header>
+
+        <h2 class="sec-title">📋 DISTRICT DATA SOURCES (게시판별)</h2>
+        <div class="grid" id="board-grid"></div>
+
+        <div class="admin-box">
+            <h3 style="color:var(--neon-green); font-family:'Orbitron';">CORE SYSTEM CONTROL</h3>
+            <input type="text" id="newName" placeholder="게시판 이름">
+            <input type="text" id="newUrl" placeholder="주소 (검색어 포함 권장)">
+            <button class="btn-add" onclick="addBoard()">ADD DATABASE</button>
+        </div>
+    </div>
+
     <script>
-        async function load() {
-            const r = await fetch('/api/scrape_all');
-            const d = await r.json();
-            document.getElementById('status').innerText = 'LAST UPDATE: ' + d.updated_at;
-            const container = document.getElementById('db');
-            container.innerHTML = d.data.map(b => `
-                <div class="card">
-                    <h3>${b.name} <button class="del-btn" onclick="del('${b.url}')">DEL</button></h3>
-                    ${b.posts.map(p => `<div class="post"><a href="${p.link}" target="_blank">${p.title}</a></div>`).join('')}
-                </div>
-            `).join('');
+        async function loadAll() {
+            try {
+                const res = await fetch('/api/scrape_all');
+                const result = await res.json();
+                
+                document.getElementById('loader').style.display = 'none';
+                document.getElementById('sync-time').innerText = `LAST SYNC: ${result.updated_at}`;
+
+                const grid = document.getElementById('board-grid');
+                grid.innerHTML = '';
+
+                result.data.forEach(board => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    
+                    const postsHtml = board.posts.map(p => `
+                        <li class="post-item">
+                            <a href="${p.link}" target="_blank">${p.title}</a>
+                            <span class="post-date">${p.date}</span>
+                        </li>
+                    `).join('');
+
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <h3>${board.name}</h3>
+                            <button class="btn-del" onclick="delBoard('${board.url}')">REMOVE</button>
+                        </div>
+                        <ul class="post-list">${postsHtml || '<li style="color:#444">조건에 맞는 데이터가 없습니다.</li>'}</ul>
+                    `;
+                    grid.appendChild(card);
+                });
+            } catch (e) {
+                console.error(e);
+                alert("네트워크 연결 오류");
+            }
         }
-        async function add() {
-            const name = document.getElementById('name').value;
-            const url = document.getElementById('url').value;
-            const password = prompt("비밀번호 입력:");
+
+        async function addBoard() {
+            const name = document.getElementById('newName').value;
+            const url = document.getElementById('newUrl').value;
+            const password = prompt("ADMIN PASSWORD:");
+            if(!name || !url || !password) return;
+
             await fetch('/api/boards', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
@@ -51,8 +207,10 @@
             });
             location.reload();
         }
-        async function del(url) {
-            const password = prompt("비밀번호 입력:");
+
+        async function delBoard(url) {
+            const password = prompt("ADMIN PASSWORD:");
+            if(!password) return;
             await fetch('/api/boards', {
                 method: 'DELETE',
                 headers: {'Content-Type': 'application/json'},
@@ -60,7 +218,8 @@
             });
             location.reload();
         }
-        load();
+
+        loadAll();
     </script>
 </body>
 </html>
