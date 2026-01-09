@@ -13,7 +13,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = Flask(__name__)
 
 CONFIG_FILE = 'config.json'
-ADMIN_PASSWORD = "1234" # 관리자 비밀번호
+ADMIN_PASSWORD = "1234" # 기본 비밀번호
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
@@ -49,10 +49,8 @@ def scrape_board(url, name, keyword):
         response.encoding = 'utf-8'
         soup = BeautifulSoup(response.text, 'html.parser')
         
-        # 게시판 공통 패턴 탐색
         rows = soup.select('table tbody tr, .board-list tr, .bbs-list tr, .list_type li, .news-list li, .search-result-list li, .list-wrap li')
-        
-        if not rows: # 특수 구조 대응
+        if not rows:
             rows = soup.select('.title, .subject, .txt_left, .tit')
 
         for row in rows:
@@ -62,8 +60,7 @@ def scrape_board(url, name, keyword):
             title = title_elem.get_text(strip=True)
             if len(title) < 3: continue
             
-            # [핵심] 키워드 필터링 로직
-            # 키워드가 설정되어 있다면 제목에 포함된 경우만 가져옴
+            # 키워드 필터링
             if keyword and keyword.strip():
                 if keyword.strip() not in title:
                     continue
@@ -75,7 +72,6 @@ def scrape_board(url, name, keyword):
 
             full_link = urljoin(url, link)
             
-            # 날짜 찾기
             date_val = ""
             for elem in row.select('td, span, .date, .reg_date, .day'):
                 txt = elem.get_text(strip=True)
@@ -87,16 +83,16 @@ def scrape_board(url, name, keyword):
                 'title': title,
                 'link': full_link,
                 'date': date_val,
-                'dt_obj': parse_date(date_val)
+                'dt_obj': parse_date(date_val),
+                'source': name
             })
             
-        # 날짜 최신순 정렬
         posts.sort(key=lambda x: x['dt_obj'], reverse=True)
         
     except Exception as e:
         print(f"Error scraping {name}: {e}")
     
-    return posts[:15]
+    return posts
 
 @app.route('/')
 def index():
@@ -107,24 +103,34 @@ def index():
 def api_scrape_all():
     config = load_config()
     all_results = []
+    integrated_feed = [] # 통합 피드용
     
     for board in config.get('boards', []):
-        # keyword 항목이 없으면 빈 문자열로 처리 (호환성)
         kw = board.get('keyword', '')
         posts = scrape_board(board['url'], board['name'], kw)
         
-        for p in posts: p.pop('dt_obj', None)
-        
+        # 개별 게시판 결과 저장
+        clean_posts = []
+        for p in posts:
+            integrated_feed.append(p.copy()) # 통합 피드에 추가
+            p.pop('dt_obj', None) # JSON 전송을 위해 제거
+            clean_posts.append(p)
+
         all_results.append({
             'name': board['name'],
             'url': board['url'],
             'keyword': kw,
-            'posts': posts
+            'posts': clean_posts[:15]
         })
+    
+    # 통합 피드 최신순 정렬 및 상위 30개 추출
+    integrated_feed.sort(key=lambda x: x['dt_obj'], reverse=True)
+    for p in integrated_feed: p.pop('dt_obj', None)
     
     return jsonify({
         'success': True,
         'data': all_results,
+        'latest_posts': integrated_feed[:30],
         'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     })
 
@@ -136,26 +142,11 @@ def manage_boards():
     
     config = load_config()
     if request.method == 'POST':
-        config['boards'].append({
-            'name': data['name'], 
-            'url': data['url'], 
-            'keyword': data.get('keyword', '') # 키워드 저장 추가
-        })
+        config['boards'].append({'name': data['name'], 'url': data['url'], 'keyword': data.get('keyword', '')})
     elif request.method == 'DELETE':
         config['boards'] = [b for b in config['boards'] if b['url'] != data['url']]
-    
     save_config(config)
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    # 초기 주소 자동 세팅
-    if not os.path.exists(CONFIG_FILE) or len(load_config()['boards']) == 0:
-        default_boards = [
-            {"name": "강남구 재건축", "url": "https://www.gangnam.go.kr/board/union6/list.do?mid=ID02_01130505", "keyword": ""},
-            {"name": "마포구 신속통합", "url": "https://www.mapo.go.kr/site/main/board/notice/list", "keyword": "신속통합"},
-            {"name": "서울시 보도자료", "url": "https://www.seoul.go.kr/news/news_report.do", "keyword": "재개발"},
-            {"name": "서울시보", "url": "https://event.seoul.go.kr/seoulsibo/list.do", "keyword": ""}
-        ]
-        save_config({"boards": default_boards})
-    
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(host='0.0.0.0', port=5000)

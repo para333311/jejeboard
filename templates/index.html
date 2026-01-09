@@ -7,143 +7,68 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Noto+Sans+KR:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-blue: #00f3ff;
-            --neon-pink: #ff00ff;
-            --neon-green: #39ff14;
-            --bg-dark: #050505;
-            --card-bg: rgba(13, 13, 26, 0.95);
+            --neon-blue: #00f3ff; --neon-pink: #ff00ff; --neon-green: #39ff14;
+            --bg-dark: #050505; --card-bg: rgba(13, 13, 26, 0.95);
         }
-
-        body {
-            background-color: var(--bg-dark);
-            color: #fff;
-            font-family: 'Noto Sans KR', sans-serif;
-            margin: 0; padding: 20px;
-            background-image: radial-gradient(circle at 2px 2px, rgba(0, 243, 255, 0.05) 1px, transparent 0);
-            background-size: 40px 40px;
-        }
-
+        body { background: var(--bg-dark); color: #fff; font-family: 'Noto Sans KR', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 1600px; margin: 0 auto; }
+        
+        header { text-align: center; padding: 30px 0; border: 2px solid var(--neon-blue); border-radius: 15px; margin-bottom: 30px; background: rgba(0, 0, 0, 0.8); }
+        h1 { font-family: 'Orbitron', sans-serif; font-size: 2.5rem; color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); margin: 0; }
+        
+        .sec-title { font-family: 'Orbitron', sans-serif; color: var(--neon-pink); border-left: 5px solid var(--neon-pink); padding-left: 15px; margin: 40px 0 20px; text-shadow: 0 0 5px var(--neon-pink); font-size: 1.4rem; }
+        
+        /* 통합 최신글 섹션 */
+        .latest-section { background: rgba(255, 0, 255, 0.05); border: 1px solid rgba(255, 0, 255, 0.3); border-radius: 15px; padding: 20px; margin-bottom: 40px; }
+        .latest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 15px; max-height: 400px; overflow-y: auto; padding-right: 10px; }
+        .latest-item { background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; border-left: 3px solid var(--neon-green); transition: 0.3s; }
+        .latest-item:hover { background: rgba(255,255,255,0.1); transform: translateX(5px); }
+        .latest-item a { color: #eee; text-decoration: none; font-size: 0.9rem; display: block; margin-bottom: 5px; }
+        .latest-meta { font-size: 0.75rem; color: var(--neon-blue); display: flex; justify-content: space-between; }
 
-        header {
-            text-align: center; padding: 40px 0;
-            border: 2px solid var(--neon-blue);
-            border-radius: 15px; margin-bottom: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            box-shadow: 0 0 20px rgba(0, 243, 255, 0.3);
-        }
-
-        h1 {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 3rem; color: var(--neon-blue);
-            text-shadow: 0 0 15px var(--neon-blue);
-            margin: 0; letter-spacing: 5px;
-        }
-
-        .status-info {
-            color: var(--neon-green); font-family: 'Orbitron', sans-serif;
-            font-size: 0.9rem; margin-top: 15px; letter-spacing: 2px;
-        }
-
-        h2.sec-title {
-            font-family: 'Orbitron', sans-serif;
-            color: var(--neon-pink); border-left: 5px solid var(--neon-pink);
-            padding-left: 15px; margin: 50px 0 25px;
-            text-shadow: 0 0 10px var(--neon-pink);
-            font-size: 1.5rem;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
-            gap: 30px;
-        }
-
-        .card {
-            background: var(--card-bg);
-            border: 1px solid var(--neon-blue);
-            border-radius: 12px; padding: 25px;
-            transition: 0.4s; position: relative;
-        }
-
-        .card:hover { 
-            border-color: var(--neon-pink); 
-            box-shadow: 0 0 20px rgba(255, 0, 255, 0.2);
-            transform: translateY(-5px);
-        }
-
-        .card-header {
-            border-bottom: 2px solid #1a1a3a; padding-bottom: 15px; margin-bottom: 20px;
-            display: flex; justify-content: space-between; align-items: flex-start;
-        }
-
-        .card-header h3 { margin: 0; font-size: 1.3rem; color: var(--neon-blue); }
-        .keyword-badge {
-            font-size: 0.7rem; color: var(--neon-green); border: 1px solid var(--neon-green);
-            padding: 2px 6px; border-radius: 4px; margin-top: 5px; display: inline-block;
-        }
-
+        /* 게시판별 그리드 */
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(450px, 1fr)); gap: 30px; }
+        .card { background: var(--card-bg); border: 1px solid var(--neon-blue); border-radius: 12px; padding: 20px; }
+        .card-header { border-bottom: 2px solid #1a1a3a; padding-bottom: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; }
+        .card-header h3 { margin: 0; font-size: 1.1rem; color: var(--neon-blue); }
+        
         .post-list { list-style: none; padding: 0; margin: 0; }
-        .post-item {
-            display: flex; justify-content: space-between; align-items: flex-start;
-            padding: 12px 0; border-bottom: 1px solid #1a1a3a; gap: 15px;
-        }
-
-        .post-item a { color: #e0e0e0; text-decoration: none; font-size: 1rem; line-height: 1.5; flex: 1; }
+        .post-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a1a3a; gap: 10px; }
+        .post-item a { color: #ccc; text-decoration: none; font-size: 0.9rem; flex: 1; }
         .post-item a:hover { color: var(--neon-green); }
-        .post-date { color: #777; font-size: 0.8rem; white-space: nowrap; margin-top: 4px; font-family: 'Orbitron'; }
+        .post-date { color: #666; font-size: 0.75rem; font-family: 'Orbitron'; white-space: nowrap; }
 
-        .admin-panel {
-            margin-top: 100px; padding: 40px;
-            background: rgba(255,255,255,0.02);
-            border: 1px dashed var(--neon-green);
-            text-align: center; border-radius: 20px;
-        }
-
-        .admin-panel input {
-            background: #000; border: 1px solid var(--neon-blue);
-            color: #fff; padding: 12px; border-radius: 8px; margin: 5px; outline: none;
-        }
-
-        .btn-main {
-            background: var(--neon-blue); color: #000; font-weight: 800;
-            border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer;
-            font-family: 'Orbitron', sans-serif; transition: 0.3s;
-        }
-
-        .btn-del {
-            background: none; color: #ff3366; border: 1px solid #ff3366;
-            padding: 3px 8px; border-radius: 5px; cursor: pointer; font-size: 0.7rem;
-        }
-
-        #loader {
-            position: fixed; top:0; left:0; width:100%; height:100%;
-            background: #050505; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 9999;
-        }
+        .admin-panel { margin-top: 60px; padding: 30px; border: 1px dashed var(--neon-green); text-align: center; border-radius: 20px; }
+        input { background: #000; border: 1px solid var(--neon-blue); color: #fff; padding: 10px; border-radius: 8px; margin: 5px; outline: none; }
+        .btn-main { background: var(--neon-blue); color: #000; font-weight: 800; border: none; padding: 10px 25px; border-radius: 8px; cursor: pointer; font-family: 'Orbitron'; }
+        .btn-del { background: none; color: #ff3366; border: 1px solid #ff3366; padding: 3px 8px; border-radius: 5px; cursor: pointer; font-size: 0.7rem; }
+        
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background: #050505; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 9999; }
     </style>
 </head>
 <body>
-
-    <div id="loader">
-        <h2 style="color:var(--neon-blue); font-family:'Orbitron';">SYNCING DATABASE...</h2>
-    </div>
+    <div id="loader"><h2 style="color:var(--neon-blue); font-family:'Orbitron';">BOOTING SYSTEM...</h2></div>
 
     <div class="container">
         <header>
             <h1>JEJE BOARD 2026</h1>
-            <div class="status-info" id="status-text">SYSTEM ONLINE</div>
+            <div id="status-text" style="color:var(--neon-green); margin-top:10px; font-family:'Orbitron'; font-size:0.8rem;">READY</div>
         </header>
 
-        <h2 class="sec-title">DISTRICT DATA SOURCES</h2>
+        <h2 class="sec-title">🔥 LATEST INTEGRATED FEED (최신 통합 게시글)</h2>
+        <div class="latest-section">
+            <div class="latest-grid" id="latest-feed"></div>
+        </div>
+
+        <h2 class="sec-title">📋 DISTRICT DATA SOURCES (게시판별 보기)</h2>
         <div class="grid" id="grid"></div>
 
         <div class="admin-panel">
-            <h3 style="color:var(--neon-green); font-family:'Orbitron'; margin-bottom: 20px;">BOARD CONFIGURATION</h3>
-            <input type="text" id="name" placeholder="게시판 이름" style="width: 200px;">
-            <input type="text" id="url" placeholder="게시판 주소 (기본 URL)" style="width: 350px;">
-            <input type="text" id="keyword" placeholder="검색 필터 키워드" style="width: 150px;">
-            <button class="btn-main" onclick="addBoard()">ADD</button>
+            <h3 style="color:var(--neon-green); font-family:'Orbitron';">SYSTEM CONTROL</h3>
+            <input type="text" id="name" placeholder="게시판 이름">
+            <input type="text" id="url" placeholder="주소">
+            <input type="text" id="keyword" placeholder="검색어">
+            <button class="btn-main" onclick="addBoard()">ADD DATABASE</button>
         </div>
     </div>
 
@@ -155,32 +80,36 @@
                 document.getElementById('loader').style.display = 'none';
                 document.getElementById('status-text').innerText = `LAST SYNC: ${result.updated_at}`;
 
+                // 1. 최신 통합 피드 채우기
+                const feed = document.getElementById('latest-feed');
+                feed.innerHTML = result.latest_posts.map(p => `
+                    <div class="latest-item">
+                        <a href="${p.link}" target="_blank">${p.title}</a>
+                        <div class="latest-meta">
+                            <span>[${p.source}]</span>
+                            <span>${p.date}</span>
+                        </div>
+                    </div>
+                `).join('') || '<p>최근 게시글이 없습니다.</p>';
+
+                // 2. 게시판별 그리드 채우기
                 const grid = document.getElementById('grid');
-                grid.innerHTML = '';
-
-                result.data.forEach(board => {
-                    const card = document.createElement('div');
-                    card.className = 'card';
-                    
-                    const posts = board.posts.map(p => `
-                        <li class="post-item">
-                            <a href="${p.link}" target="_blank">${p.title}</a>
-                            <span class="post-date">${p.date || '00-00'}</span>
-                        </li>
-                    `).join('');
-
-                    card.innerHTML = `
+                grid.innerHTML = result.data.map(board => `
+                    <div class="card">
                         <div class="card-header">
-                            <div>
-                                <h3>${board.name}</h3>
-                                ${board.keyword ? `<span class="keyword-badge">FILTER: ${board.keyword}</span>` : ''}
-                            </div>
+                            <h3>${board.name} ${board.keyword ? `<small style="color:var(--neon-green)">(${board.keyword})</small>` : ''}</h3>
                             <button class="btn-del" onclick="del('${board.url}')">DEL</button>
                         </div>
-                        <ul class="post-list">${posts || '<li style="color:#444">No matching posts found.</li>'}</ul>
-                    `;
-                    grid.appendChild(card);
-                });
+                        <ul class="post-list">
+                            ${board.posts.map(p => `
+                                <li class="post-item">
+                                    <a href="${p.link}" target="_blank">${p.title}</a>
+                                    <span class="post-date">${p.date}</span>
+                                </li>
+                            `).join('') || '<li>데이터가 없습니다.</li>'}
+                        </ul>
+                    </div>
+                `).join('');
             } catch (e) { console.error(e); }
         }
 
@@ -190,24 +119,15 @@
             const keyword = document.getElementById('keyword').value;
             const password = prompt("ADMIN PASSWORD:");
             if(!name || !url || !password) return;
-
-            const res = await fetch('/api/boards', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({name, url, keyword, password})
-            });
-            if(res.ok) location.reload();
+            await fetch('/api/boards', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({name, url, keyword, password}) });
+            location.reload();
         }
 
         async function del(url) {
             const password = prompt("ADMIN PASSWORD:");
             if(!password) return;
-            const res = await fetch('/api/boards', {
-                method: 'DELETE',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url, password})
-            });
-            if(res.ok) location.reload();
+            await fetch('/api/boards', { method: 'DELETE', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({url, password}) });
+            location.reload();
         }
 
         load();
