@@ -16,6 +16,7 @@ app = Flask(__name__)
 
 CONFIG_FILE = 'config.json'
 CACHE_FILE = 'cache.json'
+VISITORS_FILE = 'visitors.json'
 ADMIN_PASSWORD = "1111" # 기본 비밀번호
 
 # 스케줄러 초기화
@@ -119,6 +120,36 @@ def save_cache(data):
     with open(CACHE_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
+def load_visitors():
+    """방문자 데이터 로드"""
+    if os.path.exists(VISITORS_FILE):
+        try:
+            with open(VISITORS_FILE, 'r', encoding='utf-8') as f:
+                return json.load(f)
+        except:
+            pass
+    return {"today": 0, "total": 0, "date": datetime.now().strftime('%Y-%m-%d')}
+
+def save_visitors(data):
+    """방문자 데이터 저장"""
+    with open(VISITORS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+def increment_visitor():
+    """방문자 수 증가"""
+    visitors = load_visitors()
+    today = datetime.now().strftime('%Y-%m-%d')
+
+    # 날짜가 바뀌면 오늘 방문자 초기화
+    if visitors.get('date') != today:
+        visitors['today'] = 0
+        visitors['date'] = today
+
+    visitors['today'] += 1
+    visitors['total'] += 1
+    save_visitors(visitors)
+    return visitors
+
 def background_scrape():
     """백그라운드에서 크롤링 실행 (30분마다)"""
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 백그라운드 크롤링 시작...")
@@ -195,7 +226,7 @@ def manage_boards():
     data = request.json
     if data.get('password') != ADMIN_PASSWORD:
         return jsonify({'success': False, 'message': 'Password Denied'}), 403
-    
+
     config = load_config()
     if request.method == 'POST':
         config['boards'].append({'name': data['name'], 'url': data['url'], 'keyword': data.get('keyword', '')})
@@ -203,6 +234,26 @@ def manage_boards():
         config['boards'] = [b for b in config['boards'] if b['url'] != data['url']]
     save_config(config)
     return jsonify({'success': True})
+
+@app.route('/api/refresh', methods=['POST'])
+def refresh_data():
+    """즉시 크롤링 실행"""
+    print("수동 새로고침 요청 받음")
+    background_scrape()
+    cache = load_cache()
+    return jsonify(cache if cache else {'success': False, 'message': 'Refresh failed'})
+
+@app.route('/api/visitors', methods=['GET', 'POST'])
+def visitors():
+    """방문자 수 관리"""
+    if request.method == 'POST':
+        # 방문자 카운트 증가
+        visitors_data = increment_visitor()
+        return jsonify(visitors_data)
+    else:
+        # 방문자 수 조회
+        visitors_data = load_visitors()
+        return jsonify(visitors_data)
 
 if __name__ == '__main__':
     # 앱 시작 시 즉시 한 번 크롤링
