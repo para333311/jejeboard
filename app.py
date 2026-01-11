@@ -13,7 +13,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 app = Flask(__name__)
 
 CONFIG_FILE = 'config.json'
-ADMIN_PASSWORD = "1234" # 기본 비밀번호
+ADMIN_PASSWORD = "1111" # 기본 비밀번호
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
@@ -149,4 +149,5 @@ def manage_boards():
     return jsonify({'success': True})
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port)
