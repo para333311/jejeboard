@@ -9,6 +9,7 @@ from urllib.parse import urljoin
 import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
+import pytz
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -25,6 +26,11 @@ scheduler.start()
 
 # 앱 종료 시 스케줄러도 종료
 atexit.register(lambda: scheduler.shutdown())
+
+def get_korean_time():
+    """한국 시간(KST) 반환"""
+    kst = pytz.timezone('Asia/Seoul')
+    return datetime.now(kst)
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
@@ -128,7 +134,7 @@ def load_visitors():
                 return json.load(f)
         except:
             pass
-    return {"today": 0, "total": 0, "date": datetime.now().strftime('%Y-%m-%d')}
+    return {"today": 0, "total": 0, "date": get_korean_time().strftime('%Y-%m-%d')}
 
 def save_visitors(data):
     """방문자 데이터 저장"""
@@ -138,7 +144,7 @@ def save_visitors(data):
 def increment_visitor():
     """방문자 수 증가"""
     visitors = load_visitors()
-    today = datetime.now().strftime('%Y-%m-%d')
+    today = get_korean_time().strftime('%Y-%m-%d')
 
     # 날짜가 바뀌면 오늘 방문자 초기화
     if visitors.get('date') != today:
@@ -152,7 +158,7 @@ def increment_visitor():
 
 def background_scrape():
     """백그라운드에서 크롤링 실행 (30분마다)"""
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 백그라운드 크롤링 시작...")
+    print(f"[{get_korean_time().strftime('%Y-%m-%d %H:%M:%S')}] 백그라운드 크롤링 시작...")
 
     config = load_config()
     all_results = []
@@ -187,11 +193,11 @@ def background_scrape():
         'success': True,
         'data': all_results,
         'latest_posts': integrated_feed[:30],
-        'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        'updated_at': get_korean_time().strftime('%Y-%m-%d %H:%M:%S')
     }
     save_cache(cache_data)
 
-    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] 크롤링 완료! (게시판 {len(all_results)}개)")
+    print(f"[{get_korean_time().strftime('%Y-%m-%d %H:%M:%S')}] 크롤링 완료! (게시판 {len(all_results)}개)")
 
 @app.route('/')
 def index():
@@ -218,7 +224,7 @@ def api_scrape_all():
         'success': True,
         'data': [],
         'latest_posts': [],
-        'updated_at': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        'updated_at': get_korean_time().strftime('%Y-%m-%d %H:%M:%S')
     })
 
 @app.route('/api/boards', methods=['POST', 'DELETE'])
