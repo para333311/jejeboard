@@ -1,6 +1,11 @@
 {
   "boards": [
     {
+      "name": "서울시결재문서",
+      "url": "https://opengov.seoul.go.kr/sanction/list",
+      "keyword": "위원회.신속통합.후보지"
+    },
+    {
       "name": "강남구",
       "url": "https://www.gangnam.go.kr/board/union6/list.do?mid=ID02_01130505",
       "keyword": ""
