@@ -41,9 +41,14 @@
       "keyword": ""
     },
     {
-      "name": "광진구",
-      "url": "https://www.gwangjin.go.kr/search.do?category=TOTAL&kwd=%EB%B2%88%ED%98%B8%EB%B6%80%EC%97%AC&category=TOTAL&siteId=portal&preKwd=%EC%8B%A0%EC%86%8D%ED%86%B5%ED%95%A9&csrfToken=e20c7464-6a07-4588-9b1a-99040281fa0d",
-      "keyword": ""
+      "name": "광진구 (신속통합)",
+      "url": "https://www.gwangjin.go.kr/portal/bbs/B0000001/list.do?menuNo=200190",
+      "keyword": "신속통합"
+    },
+    {
+      "name": "광진구 (번호부여)",
+      "url": "https://www.gwangjin.go.kr/portal/bbs/B0000001/list.do?menuNo=200190",
+      "keyword": "번호부여"
     },
     {
       "name": "강동구",
