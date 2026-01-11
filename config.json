@@ -1,11 +1,6 @@
 {
   "boards": [
     {
-      "name": "서울시",
-      "url": "https://www.seoul.go.kr/news/news_report.do",
-      "keyword": "위원회.신속통합.후보지"
-    },
-    {
       "name": "강남구",
       "url": "https://www.gangnam.go.kr/board/union6/list.do?mid=ID02_01130505",
       "keyword": ""
