@@ -77,9 +77,10 @@ def scrape_board(url, name, keyword):
             title = title_elem.get_text(strip=True)
             if len(title) < 3: continue
             
-            # 키워드 필터링
+            # 키워드 필터링 (여러 키워드 지원: OR 조건)
             if keyword and keyword.strip():
-                if keyword.strip() not in title:
+                keywords = [kw.strip() for kw in keyword.replace('.', ',').split(',') if kw.strip()]
+                if keywords and not any(kw in title for kw in keywords):
                     continue
             
             link = title_elem.get('href', '')
