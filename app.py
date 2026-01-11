@@ -184,16 +184,24 @@ def background_scrape():
             'posts': clean_posts[:15]
         })
 
-    # 통합 피드 최신순 정렬
-    integrated_feed.sort(key=lambda x: x['dt_obj'], reverse=True)
+    # 중복 제거 (URL 기준)
+    seen_links = set()
+    unique_feed = []
     for p in integrated_feed:
+        if p['link'] not in seen_links:
+            seen_links.add(p['link'])
+            unique_feed.append(p)
+
+    # 통합 피드 최신순 정렬
+    unique_feed.sort(key=lambda x: x['dt_obj'], reverse=True)
+    for p in unique_feed:
         p.pop('dt_obj', None)
 
     # 캐시에 저장
     cache_data = {
         'success': True,
         'data': all_results,
-        'latest_posts': integrated_feed[:30],
+        'latest_posts': unique_feed[:30],
         'updated_at': get_korean_time().strftime('%Y-%m-%d %H:%M:%S')
     }
     save_cache(cache_data)
