@@ -5,3 +5,4 @@ urllib3
 gunicorn
 APScheduler
 pytz
+psycopg2-binary

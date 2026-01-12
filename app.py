@@ -10,6 +10,8 @@ import urllib3
 from apscheduler.schedulers.background import BackgroundScheduler
 import atexit
 import pytz
+import psycopg2
+from psycopg2.extras import RealDictCursor
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
@@ -19,6 +21,7 @@ CONFIG_FILE = 'config.json'
 CACHE_FILE = 'cache.json'
 VISITORS_FILE = 'visitors.json'
 ADMIN_PASSWORD = "1111" # 기본 비밀번호
+DATABASE_URL = os.environ.get('DATABASE_URL')  # Render에서 자동으로 제공
 
 # 스케줄러 초기화
 scheduler = BackgroundScheduler()
@@ -31,6 +34,37 @@ def get_korean_time():
     """한국 시간(KST) 반환"""
     kst = pytz.timezone('Asia/Seoul')
     return datetime.now(kst)
+
+def get_db_connection():
+    """PostgreSQL 연결"""
+    if DATABASE_URL:
+        return psycopg2.connect(DATABASE_URL)
+    return None
+
+def init_db():
+    """방문자 테이블 생성 (없을 경우)"""
+    if not DATABASE_URL:
+        return
+
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS visitors (
+                id SERIAL PRIMARY KEY,
+                date DATE UNIQUE NOT NULL,
+                today_count INTEGER DEFAULT 0,
+                total_count INTEGER DEFAULT 0
+            )
+        """)
+
+        conn.commit()
+        cursor.close()
+        conn.close()
+        print("✅ PostgreSQL 테이블 초기화 완료")
+    except Exception as e:
+        print(f"❌ DB 초기화 오류: {e}")
 
 def load_config():
     if os.path.exists(CONFIG_FILE):
@@ -128,17 +162,71 @@ def save_cache(data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def load_visitors():
-    """방문자 데이터 로드"""
+    """방문자 데이터 로드 (DB 우선, 없으면 파일)"""
+    today = get_korean_time().strftime('%Y-%m-%d')
+
+    # DB 사용 가능 시
+    if DATABASE_URL:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor(cursor_factory=RealDictCursor)
+
+            # 오늘 날짜 데이터 조회
+            cursor.execute("SELECT * FROM visitors WHERE date = %s", (today,))
+            row = cursor.fetchone()
+
+            # 전체 누적 조회
+            cursor.execute("SELECT SUM(today_count) as total FROM visitors")
+            total_row = cursor.fetchone()
+
+            cursor.close()
+            conn.close()
+
+            if row:
+                return {
+                    "today": row['today_count'],
+                    "total": total_row['total'] or 0,
+                    "date": today
+                }
+            else:
+                # 오늘 데이터 없으면 새로 생성
+                return {"today": 0, "total": total_row['total'] or 0, "date": today}
+
+        except Exception as e:
+            print(f"❌ DB 로드 오류: {e}")
+
+    # 파일 fallback
     if os.path.exists(VISITORS_FILE):
         try:
             with open(VISITORS_FILE, 'r', encoding='utf-8') as f:
                 return json.load(f)
         except:
             pass
-    return {"today": 0, "total": 0, "date": get_korean_time().strftime('%Y-%m-%d')}
+    return {"today": 0, "total": 0, "date": today}
 
 def save_visitors(data):
-    """방문자 데이터 저장"""
+    """방문자 데이터 저장 (DB 우선, 없으면 파일)"""
+    if DATABASE_URL:
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+
+            # UPSERT (INSERT or UPDATE)
+            cursor.execute("""
+                INSERT INTO visitors (date, today_count, total_count)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (date)
+                DO UPDATE SET today_count = %s, total_count = %s
+            """, (data['date'], data['today'], data['total'], data['today'], data['total']))
+
+            conn.commit()
+            cursor.close()
+            conn.close()
+            return
+        except Exception as e:
+            print(f"❌ DB 저장 오류: {e}")
+
+    # 파일 fallback
     with open(VISITORS_FILE, 'w', encoding='utf-8') as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
@@ -271,6 +359,10 @@ def visitors():
         return jsonify(visitors_data)
 
 if __name__ == '__main__':
+    # DB 초기화
+    print("DB 초기화 중...")
+    init_db()
+
     # 앱 시작 시 즉시 한 번 크롤링
     print("앱 시작! 초기 크롤링 실행 중...")
     background_scrape()
